@@ -41,5 +41,36 @@
     }
   </script>
   <script src="main.dart.js" type="application/javascript"></script>
+  <!-- The core Firebase JS SDK is always required and must be listed first -->
+  <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script> 
+<script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>	
+<script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-firestore.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+
+<script>
+  // Your web app's Firebase configuration
+  var firebaseConfig = {
+    apiKey: "AIzaSyCX3uNxFnlgyYHtZbw208ZPcKQCzTZehbA",
+    authDomain: "diary-app-10388.firebaseapp.com",
+    projectId: "diary-app-10388",
+    storageBucket: "diary-app-10388.appspot.com",
+    messagingSenderId: "440155443773",
+    appId: "1:440155443773:web:71f2257af3e9c609cc1054"
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+</script>
+<script type="text/javascript">
+  let useHtml = true;
+  if(useHtml) {
+    window.flutterWebRenderer = "html";
+  } else {
+    window.flutterWebRenderer = "canvaskit";
+  }
+</script>
+<script src="main.dart.js" type="application/javascript"></script>
+
 </body>
 </html>
