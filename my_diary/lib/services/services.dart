@@ -7,7 +7,7 @@ class DiaryServices {
   final CollectionReference userCollectionReference =
       FirebaseFirestore.instance.collection('users');
   Future<void> loginUser(String email, String password) async {
-    FirebaseAuth.instance
+    await FirebaseAuth.instance
         .signInWithEmailAndPassword(email: email, password: password);
   }
 
@@ -19,7 +19,7 @@ class DiaryServices {
       uid: uid,
       profession: 'Joker',
     );
-    userCollectionReference.add(user.toMap());
+    await userCollectionReference.add(user.toMap());
   }
 
   Future<void> update(MUser user, String displayName, String avatarUrl,
@@ -30,6 +30,6 @@ class DiaryServices {
       uid: user.uid,
     );
 
-    userCollectionReference.doc(user.id).update(updateUser.toMap());
+    await userCollectionReference.doc(user.id).update(updateUser.toMap());
   }
 }

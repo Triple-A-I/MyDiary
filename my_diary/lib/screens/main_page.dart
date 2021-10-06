@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:my_diary/model/user.dart';
 import 'package:my_diary/widgets/create_profile.dart';
+import 'package:my_diary/widgets/diary_list_view.dart';
 import 'package:my_diary/widgets/write_diary_dialog.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
@@ -13,6 +14,9 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   String _dropDownText;
+  DateTime _selectedDate = DateTime.now();
+  TextEditingController _titleEditingController = TextEditingController();
+  TextEditingController _descriptionEditingController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,6 +74,12 @@ class _MainPageState extends State<MainPage> {
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return AlertDialog(
+                      content: Container(
+                        child: Text(snapshot.error),
+                      ),
+                    );
                   }
                   final listStreamiUser = snapshot.data.docs.map((docs) {
                     return MUser.fromDocument(docs);
@@ -85,99 +95,80 @@ class _MainPageState extends State<MainPage> {
           )
         ],
       ),
-      body: Row(
-        children: [
-          Expanded(
-            flex: 1,
-            child: Container(
-              height: MediaQuery.of(context).size.height,
-              decoration: BoxDecoration(
-                shape: BoxShape.rectangle,
-                border: Border(
-                  right: BorderSide(
-                    width: .4,
-                    color: Colors.blueGrey,
-                  ),
-                ),
-              ),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(38.0),
-                    child: SfDateRangePicker(
-                      onSelectionChanged: (dateRangePickerSelection) {},
+      body: Scrollbar(
+        child: Row(
+          children: [
+            Expanded(
+              flex: 4,
+              child: Container(
+                height: MediaQuery.of(context).size.height,
+                decoration: BoxDecoration(
+                  shape: BoxShape.rectangle,
+                  border: Border(
+                    right: BorderSide(
+                      width: .4,
+                      color: Colors.blueGrey,
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(38.0),
-                    child: Card(
-                      elevation: 4,
-                      child: TextButton.icon(
-                        icon: Icon(
-                          Icons.add,
-                          size: 40,
-                          color: Colors.greenAccent,
-                        ),
-                        label: Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              'Write New',
-                              style: TextStyle(fontSize: 17),
-                            ),
-                          ),
-                        ),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return WriteDiaryDialog();
-                            },
-                          );
+                ),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(38.0),
+                      child: SfDateRangePicker(
+                        onSelectionChanged: (dateRangePickerSelection) {
+                          setState(() {
+                            _selectedDate = dateRangePickerSelection.value;
+                          });
                         },
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Container(
-              color: Colors.white,
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Container(
-                      child: Column(
-                        children: [
-                          Expanded(
-                            child: ListView.builder(
-                              itemCount: 8,
-                              itemBuilder: (context, index) {
-                                return SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.4,
-                                  child: Card(
-                                    elevation: 4.0,
-                                    child: ListTile(
-                                      title: Text('Hello'),
-                                    ),
-                                  ),
-                                );
-                              },
+                    Padding(
+                      padding: const EdgeInsets.all(38.0),
+                      child: Card(
+                        elevation: 4,
+                        child: TextButton.icon(
+                          icon: Icon(
+                            Icons.add,
+                            size: 40,
+                            color: Colors.greenAccent,
+                          ),
+                          label: Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                'Write New',
+                                style: TextStyle(fontSize: 17),
+                              ),
                             ),
                           ),
-                        ],
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return WriteDiaryDialog(
+                                  selectedDate: _selectedDate,
+                                  titleEditingController:
+                                      _titleEditingController,
+                                  descriptionEditingController:
+                                      _descriptionEditingController,
+                                );
+                              },
+                            );
+                          },
+                        ),
                       ),
                     ),
-                  )
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+            Expanded(
+              flex: 10,
+              child: DiaryListView(),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},

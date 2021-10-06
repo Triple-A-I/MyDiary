@@ -72,6 +72,7 @@ class CreateAccountForm extends StatelessWidget {
                           email: email, password: _passwordTextController.text)
                       .then(
                     (value) {
+                      print('value: $value, user: ${value.user}');
                       if (value.user != null) {
                         String displayName = email.split('@')[0];
                         DiaryServices()
