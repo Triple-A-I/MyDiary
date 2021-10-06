@@ -1,14 +1,38 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker_web/image_picker_web.dart';
+import 'package:mime_type/mime_type.dart';
+import 'package:my_diary/model/diary.dart';
+import 'package:my_diary/utils/utils.dart';
+import 'dart:html' as html;
+import 'package:path/path.dart' as Path;
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
-class WriteDiaryDialog extends StatelessWidget {
-  const WriteDiaryDialog({
-    Key key,
-  }) : super(key: key);
+// ignore: must_be_immutable
+class WriteDiaryDialog extends StatefulWidget {
+  WriteDiaryDialog(
+      {Key key,
+      this.selectedDate,
+      TextEditingController titleEditingController,
+      TextEditingController descriptionEditingController})
+      : _titleTextController = titleEditingController,
+        _descriptionTextController = descriptionEditingController,
+        super(key: key);
+  final TextEditingController _titleTextController;
+  final TextEditingController _descriptionTextController;
+  DateTime selectedDate;
 
   @override
+  _WriteDiaryDialogState createState() => _WriteDiaryDialogState();
+}
+
+class _WriteDiaryDialogState extends State<WriteDiaryDialog> {
+  String _text = 'Done';
+  CollectionReference diaryCollectionReference =
+      FirebaseFirestore.instance.collection('diaries');
+  @override
   Widget build(BuildContext context) {
-    final _titleTextController = TextEditingController();
-    final _descriptionTextController = TextEditingController();
     return AlertDialog(
       elevation: 5,
       content: Container(
@@ -34,8 +58,68 @@ class WriteDiaryDialog extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: TextButton(
-                    onPressed: () {},
-                    child: Text('Done'),
+                    onPressed: () async {
+                      firebase_storage.FirebaseStorage fs =
+                          firebase_storage.FirebaseStorage.instance;
+
+                      final dateTime = DateTime.now();
+                      final path = '$dateTime';
+
+                      final _fieldsNotEmpty = widget._titleTextController.text
+                              .toString()
+                              .isNotEmpty &&
+                          widget._descriptionTextController.text
+                              .toString()
+                              .isNotEmpty;
+                      String currId;
+                      if (_fieldsNotEmpty) {
+                        var newdoc = await diaryCollectionReference
+                            .add(Diary(
+                          title: widget._titleTextController.text,
+                          entry: widget._descriptionTextController.text,
+                          author: FirebaseAuth.instance.currentUser.email
+                              .split('@')[0],
+                          userId: FirebaseAuth.instance.currentUser.uid,
+                          photoUrls: FirebaseAuth.instance.currentUser.photoURL,
+                          entryTime: Timestamp.fromDate(widget.selectedDate),
+                        ).toMap())
+                            .then((value) {
+                          setState(() {
+                            currId = value.id;
+                          });
+                          return null;
+                        });
+
+                        if (_fileBytes != null) {
+                          firebase_storage.SettableMetadata metadata =
+                              firebase_storage.SettableMetadata(
+                                  contentType: 'image/jpeg',
+                                  customMetadata: {
+                                'picked-file-path': path,
+                              });
+                          await fs
+                              .ref()
+                              .child(
+                                  'images/$path${FirebaseAuth.instance.currentUser.uid}')
+                              .putData(_fileBytes, metadata)
+                              .then((value) {
+                            return value.ref.getDownloadURL().then((value) {
+                              diaryCollectionReference
+                                  .doc(currId)
+                                  .update({'photo_list': value.toString()});
+                            });
+                          });
+                        }
+
+                        setState(() {
+                          _text = 'Saving...';
+                        });
+                        Future.delayed(
+                          Duration(milliseconds: 4000),
+                        ).then((value) => Navigator.pop(context));
+                      }
+                    },
+                    child: Text(_text),
                     style: TextButton.styleFrom(
                       primary: Colors.white,
                       backgroundColor: Colors.green,
@@ -69,7 +153,9 @@ class WriteDiaryDialog extends StatelessWidget {
                         IconButton(
                           splashRadius: 26,
                           icon: Icon(Icons.image_rounded),
-                          onPressed: () {},
+                          onPressed: () async {
+                            await getMultipleImageInfos();
+                          },
                         ),
                       ],
                     ),
@@ -82,35 +168,38 @@ class WriteDiaryDialog extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Jun 23, 2033',
+                          formatDate(widget.selectedDate),
                         ),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.5,
-                          child: Form(
-                            child: Column(
-                              children: [
-                                SizedBox(
-                                  height: MediaQuery.of(context).size.height *
-                                      0.8 /
-                                      2,
-                                  child: Container(
-                                      // width: 700,
-                                      // color: Colors.green,
-                                      // child: Text('image here'),
-                                      ),
-                                ),
-                                TextFormField(
-                                  controller: _titleTextController,
-                                  decoration:
-                                      InputDecoration(hintText: 'Title...'),
-                                ),
-                                TextFormField(
-                                  maxLines: null,
-                                  controller: _descriptionTextController,
-                                  decoration: InputDecoration(
-                                      hintText: 'Write your thoughts here...'),
-                                ),
-                              ],
+                        Expanded(
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.5,
+                            child: Form(
+                              child: Column(
+                                children: [
+                                  SizedBox(
+                                    height: MediaQuery.of(context).size.height *
+                                        0.8 /
+                                        2,
+                                    child: _imageWidget,
+                                  ),
+                                  TextFormField(
+                                    controller: widget._titleTextController,
+                                    decoration:
+                                        InputDecoration(hintText: 'Title...'),
+                                  ),
+                                  Expanded(
+                                    child: TextFormField(
+                                      maxLines: null,
+                                      maxLength: null,
+                                      controller:
+                                          widget._descriptionTextController,
+                                      decoration: InputDecoration(
+                                          hintText:
+                                              'Write your thoughts here...'),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -124,5 +213,22 @@ class WriteDiaryDialog extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  html.File _cloudFile;
+  var _fileBytes;
+  Image _imageWidget;
+
+  Future<void> getMultipleImageInfos() async {
+    var mediaData = await ImagePickerWeb.getImageInfo;
+    String mimeType = mime(Path.basename(mediaData.fileName));
+    html.File mediaFile =
+        new html.File(mediaData.data, mediaData.fileName, {'type': mimeType});
+
+    setState(() {
+      _cloudFile = mediaFile;
+      _fileBytes = mediaData.data;
+      _imageWidget = Image.memory(mediaData.data);
+    });
   }
 }
