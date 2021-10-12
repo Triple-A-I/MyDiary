@@ -23,3 +23,4 @@ online and secure with flutter and firebase as a backend.
 ##Future work
 - Localization. Adding arabic language.
 - Improve user experience by using strong state management approach like BLOC.
+- Responsiveness. Make it responsive with all screen sizes.
