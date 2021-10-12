@@ -17,7 +17,7 @@ online and secure with flutter and firebase as a backend.
 - Delete diary. ![alt text](https://github.com/albraa-abdalla/MyDiary/blob/main/my_diary/images/delete.PNG?raw=true)
 - Edit diary. User can change title, body and the image.![alt text](https://github.com/albraa-abdalla/MyDiary/blob/main/my_diary/images/edit.PNG?raw=true)
 - Update Profile. User can change his name and profile pic. ![alt text](https://github.com/albraa-abdalla/MyDiary/blob/main/my_diary/images/updateprofile.PNG?raw=true)
-- Filtering diaries in specific day with latest or earliest time they were added. ![alt text](https://github.com/albraa-abdalla/MyDiary/blob/main/my_diary/images/earliest.PNG?raw=true)
+- Filtering diaries in specific day with latest or earliest time they were added. ![alt text](https://github.com/albraa-abdalla/MyDiary/blob/main/my_diary/images/latest.PNG?raw=true)
 - Logout. After user ended his journaling.
 
 ##Future work
