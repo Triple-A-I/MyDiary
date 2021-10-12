@@ -3,6 +3,9 @@
 It's flutter web app, that enables any when to document his daily life and keep it 
 online and secure with flutter and firebase as a backend and StreamProvider as state management approach.
 
+## Deployed online
+https://diary-app-10388.web.app/#/
+
 ## Main Features
 - Getting Started page as welcome Page.![alt text](https://github.com/albraa-abdalla/MyDiary/blob/main/my_diary/images/gettingStarted.PNG?raw=true)
 
