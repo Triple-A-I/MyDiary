@@ -5,5 +5,5 @@ online and secure with flutter and firebase as a backend.
 
 ## Main Features
 - Create new account.
-![alt text](https://github.com/albraa-abdalla/Chat-App/blob/master/images/CreateAccount.PNG?raw=true)
+![alt text](https://github.com/albraa-abdalla/MyDiary/blob/main/my_diary/images/CreateAccount.PNG?raw=true)
 
