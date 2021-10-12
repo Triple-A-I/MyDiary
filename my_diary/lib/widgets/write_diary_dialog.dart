@@ -97,7 +97,7 @@ class _WriteDiaryDialogState extends State<WriteDiaryDialog> {
                                   customMetadata: {
                                 'picked-file-path': path,
                               });
-                          await fs
+                          fs
                               .ref()
                               .child(
                                   'images/$path${FirebaseAuth.instance.currentUser.uid}')
@@ -115,7 +115,7 @@ class _WriteDiaryDialogState extends State<WriteDiaryDialog> {
                           _text = 'Saving...';
                         });
                         Future.delayed(
-                          Duration(milliseconds: 4000),
+                          Duration(milliseconds: 1500),
                         ).then((value) => Navigator.pop(context));
                       }
                     },

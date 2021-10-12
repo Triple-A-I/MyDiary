@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:my_diary/model/diary.dart';
 import 'package:my_diary/model/user.dart';
+import 'package:my_diary/services/services.dart';
 import 'package:my_diary/widgets/create_profile.dart';
 import 'package:my_diary/widgets/diary_list_view.dart';
 import 'package:my_diary/widgets/write_diary_dialog.dart';
+import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 class MainPage extends StatefulWidget {
@@ -13,12 +16,18 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
+  var userDiaryEntryFilteredList;
   String _dropDownText;
   DateTime _selectedDate = DateTime.now();
   TextEditingController _titleEditingController = TextEditingController();
   TextEditingController _descriptionEditingController = TextEditingController();
+  // List<Diary> _listOfDiaries = [];
   @override
   Widget build(BuildContext context) {
+    var _listOfDiaries = Provider.of<List<Diary>>(context);
+    var _user = Provider.of<User>(context);
+    var latestFilteredDiariesStream;
+    var earliestFilteredDiariesStream;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.grey.shade100,
@@ -60,9 +69,29 @@ class _MainPageState extends State<MainPage> {
                       setState(() {
                         _dropDownText = value;
                       });
+                      _listOfDiaries.clear();
+                      latestFilteredDiariesStream =
+                          DiaryServices().getLatestDiaries(_user.uid);
+                      latestFilteredDiariesStream.then((value) {
+                        for (var item in value) {
+                          setState(() {
+                            _listOfDiaries.add(item);
+                          });
+                        }
+                      });
                     } else if (value == 'Earliest') {
                       setState(() {
                         _dropDownText = value;
+                      });
+                      _listOfDiaries.clear();
+                      earliestFilteredDiariesStream =
+                          DiaryServices().getEarliestDiaries(_user.uid);
+                      earliestFilteredDiariesStream.then((value) {
+                        for (var item in value) {
+                          setState(() {
+                            _listOfDiaries.add(item);
+                          });
+                        }
                       });
                     }
                   },
@@ -119,6 +148,18 @@ class _MainPageState extends State<MainPage> {
                         onSelectionChanged: (dateRangePickerSelection) {
                           setState(() {
                             _selectedDate = dateRangePickerSelection.value;
+                            _listOfDiaries.clear();
+                            userDiaryEntryFilteredList = DiaryServices()
+                                .getSameDateDiaries(
+                                    Timestamp.fromDate(_selectedDate).toDate(),
+                                    FirebaseAuth.instance.currentUser.uid);
+                            userDiaryEntryFilteredList.then((value) {
+                              for (var item in value) {
+                                setState(() {
+                                  _listOfDiaries.add(item);
+                                });
+                              }
+                            });
                           });
                         },
                       ),
@@ -165,13 +206,27 @@ class _MainPageState extends State<MainPage> {
             ),
             Expanded(
               flex: 10,
-              child: DiaryListView(),
+              child: DiaryListView(
+                selectedDate: _selectedDate,
+                listOfDiaries: _listOfDiaries,
+              ),
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return WriteDiaryDialog(
+                selectedDate: _selectedDate,
+                titleEditingController: _titleEditingController,
+                descriptionEditingController: _descriptionEditingController,
+              );
+            },
+          );
+        },
         child: Icon(Icons.add),
         tooltip: 'add',
       ),

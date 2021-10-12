@@ -6,9 +6,11 @@ class DeleteEntryDialog extends StatelessWidget {
   const DeleteEntryDialog({
     Key key,
     @required this.diary,
+    this.bookCollectionReference,
   }) : super(key: key);
 
   final Diary diary;
+  final CollectionReference<Object> bookCollectionReference;
 
   @override
   Widget build(BuildContext context) {
